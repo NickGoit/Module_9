@@ -3,66 +3,78 @@ CONTACTS: dict = {}
 
 
 def input_error(func):
-    def wrapper():
+    def wrapper(*args, **kwargs):
         try:
-            func()
+            return func(*args, **kwargs)
         except KeyError:
-            print('This contact is not found. Please try again')
+            return 'This contact is not found. Please try again'
         except ValueError:
-            print('Please enter your data correctly and try again ')
+            return 'Please enter your data correctly and try again'
         except IndexError:
-            print('Please check arguments')
+            return 'Please check arguments'
+        except TypeError:
+            return 'Please enter correct data with space'
     return wrapper
 
 
 @input_error
 def greetings_fun():
-    print('Greeting, How can I help you?')
+    return 'Greeting, How can I help you?'
 
 
 @input_error
-def adding_fun():
-    name, phone = input('Please add your name and phone. Use space between them ').split()
+def adding_fun(name, phone):
     CONTACTS[name] = phone
-    print(f'Contact {name} and {phone} was successfully added')
+    return f'Contact {name} and {phone} was successfully added'
 
 
 @input_error
-def change_fun():
-    name = input('Please type the name contact: ')
-    while True:
-        choice = input(f'Contact {name} has a phone {CONTACTS[name]}, Would you like to change? (Yes/No): ')
-        if choice == 'Yes':
-            new_phone = input('Please type a new phone')
-            CONTACTS[name] = new_phone
-            print(f'Contact {name} has changed phone number on {new_phone}')
-            break
-        elif choice == 'No':
-            print('Your request was cancelled')
-            break
-        else:
-            print('You command isn\'t recognised. Please try again')
+def change_fun(name, new_phone):
+    CONTACTS[name] = new_phone
+    return f'Contact {name} has changed phone number on {new_phone}'
 
 
 @input_error
-def find_fun():
-    name = input('Please type are looking name: ')
-    print(f'Under the {name} contact is recorded phone {CONTACTS[name]}')
+def find_fun(name):
+    return f'Under the {name} contact is recorded phone {CONTACTS[name]}'
 
 
 @input_error
 def show_all_fun():
+    database = ''
     if CONTACTS:
         for name, phone in CONTACTS.items():
-            print(f'|{name}   |   {phone}|')
+            database += f'|{name}   :   {phone}|\n'
+        return database
     else:
-        print('Contacts database is empty')
+        return 'Contacts database is empty'
 
 
 @input_error
 def goodbay_fun():
-    print('Thank you for applying our Bot-assist. Have a nice day')
-    quit()
+    return 'Thank you for applying our Bot-assist. Have a nice day'
+
+
+def reaction(user_command, *data):
+    if user_command in COMMANDS:
+        return COMMANDS[user_command](*data)
+    else:
+        return 'Wrong command'
+
+
+def data_analytic(data):
+    if data == 'show all':
+        user_command = 'show all'
+        arguments = tuple()
+        return reaction(user_command, *arguments)
+
+    if data == 'good bye':
+        user_command = 'good bye'
+        arguments = tuple()
+        return reaction(user_command, *arguments)
+
+    (user_command, *arguments) = data.casefold().split()
+    return reaction(user_command, *arguments)
 
 
 COMMANDS = {
@@ -80,10 +92,10 @@ COMMANDS = {
 def main():
     while True:
         request = input('Please type command: ').casefold()
-        if request in COMMANDS:
-            COMMANDS[request]()
-        else:
-            print('Unknown command. Please try again: ')
+        result = data_analytic(request)
+        print(result)
+        if result == 'Thank you for applying our Bot-assist. Have a nice day':
+            break
 
 
 if __name__ == '__main__':
